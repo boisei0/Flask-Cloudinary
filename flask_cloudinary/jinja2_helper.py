@@ -102,7 +102,11 @@ class CloudinaryTagExtension(Extension):
 
                     options[name] = value
 
-        node_options = nodes.Dict(options)
+        node_options = []
+        for k, v in options:
+            node_options.append(nodes.Pair(k, v))
+
+        node_options = nodes.Dict(node_options)
 
         call = self.call_method('_render', [source, node_options], lineno=lineno)
         output = nodes.CallBlock(call, [], [], [])
