@@ -44,9 +44,7 @@ class CloudinaryIncludesExtension(Extension):
         if not processing:
             processing = False
 
-        template.render(url_for=url_for, processing=processing)
-
-        return template
+        return template.render(url_for=url_for, processing=processing)
 
 
 class CloudinaryJSConfigExtension(Extension):
