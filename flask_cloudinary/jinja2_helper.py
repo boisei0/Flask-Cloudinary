@@ -32,7 +32,7 @@ class CloudinaryIncludesExtension(Extension):
                 processing = value
 
         call = self.call_method('_render_includes', [processing], lineno=lineno)
-        output = nodes.Output([call])
+        output = nodes.CallBlock([call], [], [], [])
         output.set_lineno(lineno)
 
         return output
@@ -56,7 +56,7 @@ class CloudinaryJSConfigExtension(Extension):
         lineno = next(parser.stream).lineno
 
         call = self.call_method('_render_config', lineno=lineno)
-        output = nodes.Output([call])
+        output = nodes.CallBlock([call], [], [], [])
         output.set_lineno(lineno)
 
         return output
@@ -105,7 +105,7 @@ class CloudinaryTagExtension(Extension):
         node_options = nodes.Dict(options)
 
         call = self.call_method('_render', [source, node_options], lineno=lineno)
-        output = nodes.Output([call])
+        output = nodes.CallBlock([call], [], [], [])
         output.set_lineno(lineno)
 
         return output
