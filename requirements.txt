@@ -1,0 +1,4 @@
+cloudinary
+wtforms
+flask
+jinja2
