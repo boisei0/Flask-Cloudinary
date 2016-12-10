@@ -114,7 +114,7 @@ class CloudinaryTagExtension(Extension):
 
         return output
 
-    def _render(self, source, options):
+    def _render(self, source, options, caller=None):
         if not isinstance(source, cloudinary.CloudinaryResource):
             source = cloudinary.CloudinaryResource(source)
 
