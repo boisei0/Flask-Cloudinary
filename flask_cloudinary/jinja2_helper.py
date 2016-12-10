@@ -103,7 +103,7 @@ class CloudinaryTagExtension(Extension):
                     options[name] = value
 
         node_options = []
-        for k, v in options:
+        for k, v in options.iteritems():  # TODO: Do this the Python3 friendly way
             node_options.append(nodes.Pair(k, v))
 
         node_options = nodes.Dict(node_options)
