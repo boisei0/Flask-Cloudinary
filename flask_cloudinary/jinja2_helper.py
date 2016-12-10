@@ -100,7 +100,7 @@ class CloudinaryTagExtension(Extension):
                     parser.stream.skip()
                     value = parser.parse_expression()
 
-                    options[name] = value
+                    options[nodes.Const(name)] = value
 
         node_options = []
         for k, v in options.iteritems():  # TODO: Do this the Python3 friendly way
