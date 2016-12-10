@@ -9,6 +9,8 @@ from jinja2 import nodes, Template
 
 import cloudinary
 
+from flask_cloudinary import LIBRARY_ROOT
+
 
 class CloudinaryIncludesExtension(Extension):
     tags = {'cloudinary_includes'}
@@ -36,7 +38,7 @@ class CloudinaryIncludesExtension(Extension):
         return output
 
     def _render_includes(self, processing, caller=None):
-        with open(os.path.join('templates', 'cloudinary_includes.html'), 'r') as template_file:
+        with open(os.path.join(LIBRARY_ROOT, 'templates', 'cloudinary_includes.html'), 'r') as template_file:
             template = Template(template_file.read())
 
         if not processing:
@@ -70,7 +72,7 @@ class CloudinaryJSConfigExtension(Extension):
             ))
         )
 
-        with open(os.path.join('templates', 'cloudinary_js_config.html'), 'r') as template_file:
+        with open(os.path.join(LIBRARY_ROOT, 'templates', 'cloudinary_js_config.html'), 'r') as template_file:
             template = Template(template_file.read())
 
         template.render(params=params)

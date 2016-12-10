@@ -1,5 +1,9 @@
 # encoding=utf-8
+import os
+
 from flask import Blueprint
+
+LIBRARY_ROOT = os.path.abspath(os.path.dirname(__file__))
 
 
 class FlaskCloudinary(object):
