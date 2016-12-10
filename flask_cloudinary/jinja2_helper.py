@@ -90,8 +90,11 @@ class CloudinaryTagExtension(Extension):
         source = parser.parse_expression()
 
         if parser.stream.skip_if('comma'):
+            first = True
             while parser.stream.current.type != 'block_end':
-                parser.stream.expect('comma')
+                if not first:
+                    parser.stream.expect('comma')
+                first = False
 
                 # Lookahead to see if this is an assignment (an option)
                 if parser.stream.current.test('name') and parser.stream.look().test('assign'):

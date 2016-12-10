@@ -80,10 +80,7 @@ class CloudinaryJSFileField(FileField):
 
         self.widget = CloudinaryInputWidget()
 
-
         super(CloudinaryJSFileField, self).__init__()
-
-
 
     def enable_callback(self, request):
         # TODO: Move to __init__ with extra parameter
