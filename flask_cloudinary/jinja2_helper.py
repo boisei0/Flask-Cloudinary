@@ -73,9 +73,7 @@ class CloudinaryJSConfigExtension(Extension):
         with open(os.path.join(LIBRARY_ROOT, 'templates', 'cloudinary_js_config.html'), 'r') as template_file:
             template = Template(template_file.read())
 
-        template.render(params=params)
-
-        return template
+        return template.render(params=params)
 
 
 class CloudinaryTagExtension(Extension):
