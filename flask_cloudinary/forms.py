@@ -83,7 +83,7 @@ class CloudinaryJSFileField(FileField):
         if 'validators' in kwargs:
             kwargs['validators'].append(CloudinarySignatureValidator())
         else:
-            kwargs['validators'] = CloudinarySignatureValidator()
+            kwargs['validators'] = [CloudinarySignatureValidator()]
 
         if options is None:
             options = {}
@@ -98,6 +98,7 @@ class CloudinaryJSFileField(FileField):
 
     def process_formdata(self, valuelist):
         if valuelist:
+            print(valuelist)
             value = valuelist[0]
 
             m = re.search(r'^([^/]+)/([^/]+)/v(\d+)/([^#]+)#([^/]+)$', value)
@@ -134,7 +135,6 @@ class CloudinaryUnsignedJSFileField(CloudinaryJSFileField):
         options.update({"unsigned": True, "upload_preset": upload_preset})
 
         super(CloudinaryUnsignedJSFileField, self).__init__(options, *args, **kwargs)
-
 
 
 class CloudinaryFileField(FileField):
