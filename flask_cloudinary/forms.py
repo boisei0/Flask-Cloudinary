@@ -1,4 +1,5 @@
 # encoding=utf-8
+from copy import deepcopy
 import json
 import re
 
@@ -10,34 +11,43 @@ from wtforms import ValidationError
 
 from cloudinary import CloudinaryResource
 import cloudinary.utils
+import cloudinary.uploader
+
+
+def cl_init_js_callbacks(form):
+    for field in form:
+        if isinstance(field, CloudinaryJSFileField):
+            field.enable_callback()
 
 
 class CloudinaryInputWidget(FileInput):
-    def __init__(self):
-        self._core_options = {
-            # 'callback':
-        }
+    def __init__(self, **options):
+        self.core_options = dict()
+        self.core_options.update(options)
 
     def __call__(self, field, **kwargs):
         options = kwargs.get('options', {})
         kwargs.pop('options')
 
-        params = cloudinary.utils.build_upload_params(**options)
-        if 'unsigned' in options:
+        options_ = deepcopy(self.core_options)
+        options_.update(options)
+
+        params = cloudinary.utils.build_upload_params(**options_)
+        if 'unsigned' in options_:
             params = cloudinary.utils.cleanup_params(params)
         else:
-            params = cloudinary.utils.sign_request(params, options)
+            params = cloudinary.utils.sign_request(params, options_)
 
-        if 'resource_type' not in options:
+        if 'resource_type' not in options_:
             options['resource_type'] = 'auto'
 
         html_attrs = {
-            'data_url': cloudinary.utils.cloudinary_api_url('upload', **options),
+            'data_url': cloudinary.utils.cloudinary_api_url('upload', **options_),
             'data-cloudinary-field': field.name + '-cloudinary',
             'data-form-data': json.dumps(params)
         }
 
-        chunk_size = options.get('chunk_size', None)
+        chunk_size = options_.get('chunk_size', None)
         if chunk_size:
             html_attrs['data-max-chunk-size'] = chunk_size
 
@@ -60,15 +70,13 @@ class CloudinaryInputWidget(FileInput):
 
             widget = HTMLString(u''.join([
                 widget,
-                u'<input type="hidden" name="{0}" value="{1}">'.format(field.name + '-cloudinary', field.value)
+                u'<input type="hidden" name="{0}" value="{1}">'.format(field.name + '-cloudinary', value_string)
             ]))
 
         return widget
 
 
 class CloudinaryJSFileField(FileField):
-    widget = CloudinaryInputWidget()  # TODO: Move to __init__
-
     def __init__(self, options=None, *args, **kwargs):
         if 'validators' in kwargs:
             kwargs['validators'].append(CloudinarySignatureValidator())
@@ -78,13 +86,13 @@ class CloudinaryJSFileField(FileField):
         if options is None:
             options = {}
 
-        self.widget = CloudinaryInputWidget()
+        self.widget = CloudinaryInputWidget(**options)
 
-        super(CloudinaryJSFileField, self).__init__()
+        super(CloudinaryJSFileField, self).__init__(*args, **kwargs)
 
-    def enable_callback(self, request):
-        # TODO: Move to __init__ with extra parameter
-        pass
+    def enable_callback(self):
+        self.widget.core_options['callback'] = url_for('flask_cloudinary.static', filename='html/cloudinary_cors.html',
+                                                       _external=True)
 
     def process_formdata(self, valuelist):
         if valuelist:
@@ -116,6 +124,33 @@ class CloudinaryJSFileField(FileField):
             )
 
 
+class CloudinaryUnsignedJSFileField(CloudinaryJSFileField):
+    def __init__(self, upload_preset, options=None, *args, **kwargs):
+        if options is None:
+            options = {}
+        options = options.copy()
+        options.update({"unsigned": True, "upload_preset": upload_preset})
+
+        super(CloudinaryUnsignedJSFileField, self).__init__(options, *args, **kwargs)
+
+
+
+class CloudinaryFileField(FileField):
+    def __init__(self, options=None, autosave=True, *args, **kwargs):
+        self.autosave = autosave
+        self.options = options or {}
+        super(CloudinaryFileField, self).__init__(*args, **kwargs)
+
+    def process_formdata(self, valuelist):
+        super(CloudinaryFileField, self).process_formdata(valuelist)
+
+        if not self.data:
+            pass
+        if self.autosave:
+            self.data = cloudinary.uploader.upload_image(self.data, **self.options)
+
+
+# Validators:
 class CloudinarySignatureValidator(object):
     """Validate the signature"""
 
