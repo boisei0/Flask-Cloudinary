@@ -26,8 +26,10 @@ class CloudinaryInputWidget(FileInput):
         self.core_options.update(options)
 
     def __call__(self, field, **kwargs):
-        options = kwargs.get('options', {})
-        kwargs.pop('options')
+        if 'options' in kwargs:
+            options = kwargs.pop('options')
+        else:
+            options = {}
 
         options_ = deepcopy(self.core_options)
         options_.update(options)
