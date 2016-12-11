@@ -76,8 +76,8 @@ class CloudinaryJSConfigExtension(Extension):
         return template.render(params=params)
 
 
-class CloudinaryTagExtension(Extension):
-    tags = {'cloudinary'}
+class CloudinaryURLExtension(Extension):
+    tags = {'cloudinary_url'}
 
     def parse(self, parser):
         lineno = next(parser.stream).lineno
@@ -108,14 +108,25 @@ class CloudinaryTagExtension(Extension):
 
         node_options = nodes.Dict(node_options)
 
-        call = self.call_method('_render', [source, node_options], lineno=lineno)
+        call = self.call_method('render', [source, node_options], lineno=lineno)
         output = nodes.CallBlock(call, [], [], [])
         output.set_lineno(lineno)
 
         return output
 
-    def _render(self, source, options, caller=None):
+    def render(self, image, options, caller=None):
+        if not isinstance(image, cloudinary.CloudinaryResource):
+            image = cloudinary.CloudinaryResource(image)
+
+        return image.image(**options)
+
+
+class CloudinaryTagExtension(CloudinaryURLExtension):
+    tags = {'cloudinary'}
+
+    def render(self, source, options, caller=None):
         if not isinstance(source, cloudinary.CloudinaryResource):
             source = cloudinary.CloudinaryResource(source)
 
         return source.build_url(**options)
+
