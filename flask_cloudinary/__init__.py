@@ -23,6 +23,6 @@ class FlaskCloudinary(object):
         app.register_blueprint(blueprint)
 
         app.jinja_env.add_extension('flask_cloudinary.jinja2_helper.CloudinaryTagExtension')
-        app.jinja_env.add_extension('flask_cloudinary.jinja2.helper.CloudinaryURLExtension')
+        app.jinja_env.add_extension('flask_cloudinary.jinja2_helper.CloudinaryURLExtension')
         app.jinja_env.add_extension('flask_cloudinary.jinja2_helper.CloudinaryIncludesExtension')
         app.jinja_env.add_extension('flask_cloudinary.jinja2_helper.CloudinaryJSConfigExtension')
