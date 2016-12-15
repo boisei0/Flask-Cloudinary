@@ -3,7 +3,7 @@ from copy import deepcopy
 import json
 import re
 
-from flask import url_for
+from flask import url_for, current_app
 
 from wtforms.widgets import FileInput, HTMLString
 from wtforms.fields import FileField
@@ -12,6 +12,38 @@ from wtforms import ValidationError
 from cloudinary import CloudinaryResource
 import cloudinary.utils
 import cloudinary.uploader
+
+
+# noinspection PyClassHasNoInit
+class CloudinaryMixin:
+    def to_resource(self, value):
+        if not value:
+            return None
+
+        m = re.search(r'^([^/]+)/([^/]+)/v(\d+)/([^#]+)#([^/]+)$', value)
+        if not m:
+            raise ValueError(u'Invalid format')
+
+        resource_type = m.group(1)
+        upload_type = m.group(2)
+        version = m.group(3)
+        filename = m.group(4)
+        signature = m.group(5)
+
+        m = re.search(r'(.*)\.(.*)', filename)
+        if not m:
+            raise ValueError(u'Invalid file name')
+
+        public_id = m.group(1)
+        image_format = m.group(2)
+
+        return CloudinaryResource(
+            public_id,
+            format=image_format,
+            signature=signature,
+            type=upload_type,
+            resource_type=resource_type
+        )
 
 
 def cl_init_js_callbacks(form):
@@ -78,7 +110,7 @@ class CloudinaryInputWidget(FileInput):
         return widget
 
 
-class CloudinaryJSFileField(FileField):
+class CloudinaryJSFileField(FileField, CloudinaryMixin):
     def __init__(self, options=None, *args, **kwargs):
         if 'validators' in kwargs:
             kwargs['validators'].append(CloudinarySignatureValidator())
@@ -98,33 +130,7 @@ class CloudinaryJSFileField(FileField):
 
     def process_formdata(self, valuelist):
         if valuelist:
-            print(valuelist)
             value = valuelist[0]
-
-            m = re.search(r'^([^/]+)/([^/]+)/v(\d+)/([^#]+)#([^/]+)$', value)
-            if not m:
-                raise ValueError(u'Invalid format')
-
-            resource_type = m.group(1)
-            upload_type = m.group(2)
-            version = m.group(3)
-            filename = m.group(4)
-            signature = m.group(5)
-
-            m = re.search(r'(.*)\.(.*)', filename)
-            if not m:
-                raise ValueError(u'Invalid file name')
-
-            public_id = m.group(1)
-            image_format = m.group(2)
-
-            self.data = CloudinaryResource(
-                public_id,
-                format=image_format,
-                signature=signature,
-                type=upload_type,
-                resource_type=resource_type
-            )
 
 
 class CloudinaryUnsignedJSFileField(CloudinaryJSFileField):
@@ -143,6 +149,7 @@ class CloudinaryFileField(FileField):
         self.options = options or {}
         super(CloudinaryFileField, self).__init__(*args, **kwargs)
 
+    # noinspection PyAttributeOutsideInit
     def process_formdata(self, valuelist):
         super(CloudinaryFileField, self).process_formdata(valuelist)
 
